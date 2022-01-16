@@ -1,0 +1,108 @@
+containerized: "docker://svigneau/variant_caller:0.1"
+
+configfile: "config/config.yaml"
+
+# get variables from config file
+fastq_ext_r1 = config["fastq_ext"]["r1"]
+fastq_ext_r2 = config["fastq_ext"]["r2"]
+genome = config["genome"]
+ref_dir = config["ref_dir"]
+log_dir = config["log_dir"]
+env_dir = config["env_dir"]
+fastq_dir = config["fastq_dir"]
+aligned_dir = config["aligned_dir"]
+variants_dir = config["variants_dir"]
+
+# final output
+rule all:
+    input:
+        expand(variants_dir + "{sample}.vcf", sample = config["samples"])
+
+# index genome
+rule bwa_index:
+    input:
+        ref_dir + genome
+    output:
+        multiext(ref_dir + genome, ".amb", ".ann", ".bwt", ".pac", ".sa")
+    log:
+        log_dir + "bwa_index/" + genome + ".log"
+    params:
+        prefix = ref_dir + genome
+    conda:
+        env_dir + "bwa.yaml"
+    shell:
+        "bwa index -p {params.prefix} {input} > {log} 2>&1"
+
+# align reads to genome
+rule bwa_mem:
+    input:
+        fastq1 = fastq_dir + "{sample}" + fastq_ext_r1, 
+        fastq2 = fastq_dir + "{sample}" + fastq_ext_r2,
+        index = rules.bwa_index.output
+    output:
+        aligned_dir + "{sample}.aligned.sam"
+    log:
+        log_dir + "bwa_mem/{sample}.log"
+    params:
+        index_prefix = ref_dir + genome
+    conda:
+        env_dir + "bwa.yaml"
+    shell:
+        "bwa mem {params.index_prefix} {input.fastq1} {input.fastq2} > {output} 2> {log}"
+
+# convert alignment from sam to bam format
+rule samtools_view_bam:
+    input:
+        aligned_dir + "{sample}.aligned.sam"
+    output:
+        aligned_dir + "{sample}.aligned.bam"
+    log:
+        log_dir + "samtools_view_bam/{sample}.log"
+    conda:
+        env_dir + "samtools.yaml"
+    shell:
+        "samtools view -S -b {input} > {output} 2> {log}"
+
+# sort bam file
+rule samtools_sort:
+    input:
+        aligned_dir + "{sample}.aligned.bam"
+    output:
+        aligned_dir + "{sample}.aligned.sorted.bam"
+    log:
+        log_dir + "samtools_sort/{sample}.log"
+    conda:
+        env_dir + "samtools.yaml"
+    shell:
+        "samtools sort -o {output} {input} > {log} 2>&1"
+
+# index bam file for visualization in igv
+rule samtools_index:
+    input:
+        aligned_dir + "{sample}.aligned.sorted.bam"
+    output:
+        aligned_dir + "{sample}.aligned.sorted.bam.bai"
+    log:
+        log_dir + "samtools_index/{sample}.log"
+    conda:
+        env_dir + "samtools.yaml"
+    shell:
+        "samtools index {input} > {log} 2>&1"
+
+# find variants
+rule freebayes:
+    input:
+        fasta = ref_dir + genome,
+        bam = aligned_dir + "{sample}.aligned.sorted.bam"
+    output:
+        variants_dir + "{sample}.vcf"
+    log:
+        log_dir + "freebayes/{sample}.log"
+    conda:
+        env_dir + "freebayes.yaml"
+    shell:
+        "freebayes -f {input.fasta} {input.bam} > {output} 2> {log}"
+        
+
+#samtools flagstat sample.aligned.sorted.bam > samtools_flagstat.txt 2>samtools_flagstat_stderr.txt
+#vcftools --vcf sample.vcf --minQ 20 --minDP 10 --recode --recode-INFO-all --out sample.filtered.vcf 2>vcftools_stderr.txt
