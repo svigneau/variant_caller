@@ -21,7 +21,7 @@ Unit tests generated with `snakemake --generate-unit-tests` were modified to do 
 - add fastqc [DONE]
 - add multiqc
 - mark duplicates [DONE]
-- filter VCF using QUAL and DP
+- filter VCF using QUAL and DP [DONE]
 - annotate VCF with SNPeff or VEP
 - add unit tests for new rules
 - update Dockerfile and Docker image with new environments

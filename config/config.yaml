@@ -14,6 +14,11 @@ fastq_ext:
 # name of reference genome fastq file
 genome: MN908947.3.fasta
 
+# vcftools parameters
+vcftools:
+    minq: 20
+    mindp: 10
+
 # directory structure for pipeline
 ref_dir: ref/
 log_dir: results/logs/

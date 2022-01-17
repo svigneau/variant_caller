@@ -20,7 +20,7 @@ metrics_dir = config["metrics_dir"]
 # final output
 rule all:
     input:
-        vcf = expand(variants_dir + "{sample}.vcf", sample = config["samples"]),
+        vcf = expand(variants_dir + "{sample}.recode.vcf", sample = config["samples"]),
         fastqc1 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r1 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
         fastqc2 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r2 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
         bai = expand(aligned_dir + "{sample}.aligned.sorted.marked_dup.bam.bai", sample = config["samples"])
@@ -100,7 +100,7 @@ rule samtools_sort:
     shell:
         "samtools sort -o {output} {input} > {log} 2>&1"
 
-# mark duplicates in bam file:
+# mark duplicates in bam file
 rule picard_markduplicates:
     input:
         aligned_dir + "{sample}.aligned.sorted.bam"
@@ -145,6 +145,22 @@ rule freebayes:
     shell:
         "freebayes -f {input.fasta} {input.bam} > {output} 2> {log}"
         
+# filter variants with 	QUAL and DP
+rule vcftools_filter:
+    input:
+        variants_dir + "{sample}.vcf"
+    output:
+        variants_dir + "{sample}.recode.vcf"
+    log:
+        log_dir + "vcftools_filter/{sample}.vcf"
+    params:
+        minq = config["vcftools"]["minq"],
+        mindp = config["vcftools"]["mindp"],
+        out = variants_dir + "{sample}"
+    conda:
+        env_dir + "vcftools.yaml"
+    shell:
+        "vcftools --vcf {input} --minQ {params.minq} --minDP {params.mindp} --recode --recode-INFO-all --out {params.out} > {log} 2>&1"
 
 #samtools flagstat sample.aligned.sorted.bam > samtools_flagstat.txt 2>samtools_flagstat_stderr.txt
 #vcftools --vcf sample.vcf --minQ 20 --minDP 10 --recode --recode-INFO-all --out sample.filtered.vcf 2>vcftools_stderr.txt
