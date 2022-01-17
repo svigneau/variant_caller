@@ -9,7 +9,7 @@ Before running the pipeline:
 The pipeline can be run with one of the following commands:
 - `snakemake --cores [number of cores]` uses local dependencies
 - `snakemake --cores [number of cores] --use-conda` uses snakemake integrated package management to fetch dependencies from conda repository and create self-contained environments
-- `snakemake --cores [number of cores] --use-conda --use-singularity` uses snakemake integrated package management within a Docker container which will be pulled from DockerHub (docker://svigneau/variant_caller) and contains the required dependencies
+- `snakemake --cores [number of cores] --use-conda --use-singularity` uses snakemake integrated package management within a Docker container created from DockerHub (docker://svigneau/variant_caller) and carrying the required dependencies
 
 **Notes:**
 
@@ -18,10 +18,10 @@ Unit tests generated with `snakemake --generate-unit-tests` were modified to do 
 - remove date line from vcf files
 
 **To do:**
-- add fastqc
+- add fastqc [DONE]
 - add multiqc
 - filter VCF using QUAL and DP
 - mark duplicates
 - annotate VCF with SNPeff or VEP
 - add unit tests for new rules
-- update Dockerfile and image with new environments
+- update Dockerfile and Docker image with new environments
