@@ -2,7 +2,7 @@
 # e.g. for fastq files "sample.R1.paired.fq" and "sample.R2.paired.fq",
 # the corresponding base name is "sample"
 samples:
-    test_sample
+    test_sample:
 
 # fastq file name extensions for read 1 and read 2
 # e.g. for fastq files "sample.R1.paired.fq" and "sample.R2.paired.fq"
@@ -22,3 +22,4 @@ fastq_dir: fastq/
 fastqc_dir: results/fastqc/
 aligned_dir: results/aligned/
 variants_dir: results/variants/
+metrics_dir: results/metrics/

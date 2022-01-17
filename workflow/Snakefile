@@ -15,13 +15,15 @@ fastq_dir = config["fastq_dir"]
 fastqc_dir = config["fastqc_dir"]
 aligned_dir = config["aligned_dir"]
 variants_dir = config["variants_dir"]
+metrics_dir = config["metrics_dir"]
 
 # final output
 rule all:
     input:
         vcf = expand(variants_dir + "{sample}.vcf", sample = config["samples"]),
         fastqc1 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r1 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
-        fastqc2 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r2 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"])
+        fastqc2 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r2 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
+        bai = expand(aligned_dir + "{sample}.aligned.sorted.marked_dup.bam.bai", sample = config["samples"])
 
 # index genome
 rule bwa_index:
@@ -98,12 +100,30 @@ rule samtools_sort:
     shell:
         "samtools sort -o {output} {input} > {log} 2>&1"
 
-# index bam file for visualization in igv
-rule samtools_index:
+# mark duplicates in bam file:
+rule picard_markduplicates:
     input:
         aligned_dir + "{sample}.aligned.sorted.bam"
     output:
-        aligned_dir + "{sample}.aligned.sorted.bam.bai"
+        aligned_dir + "{sample}.aligned.sorted.marked_dup.bam"
+    log:
+        log_dir + "picard_markduplicates/{sample}.log"
+    params:
+        metrics_file = metrics_dir + "picard_markduplicates/{sample}.aligned.sorted.marked_dup.metrics"
+    conda:
+        env_dir + "picard.yaml"
+    shell:
+        """
+        mkdir -p $(dirname {params.metrics_file})
+        picard MarkDuplicates I={input} O={output} METRICS_FILE={params.metrics_file} ASSUME_SORTED=true > {log} 2>&1
+        """
+
+# index bam file for visualization in igv
+rule samtools_index:
+    input:
+        aligned_dir + "{sample}.aligned.sorted.marked_dup.bam"
+    output:
+        aligned_dir + "{sample}.aligned.sorted.marked_dup.bam.bai"
     log:
         log_dir + "samtools_index/{sample}.log"
     conda:
@@ -115,7 +135,7 @@ rule samtools_index:
 rule freebayes:
     input:
         fasta = ref_dir + genome,
-        bam = aligned_dir + "{sample}.aligned.sorted.bam"
+        bam = aligned_dir + "{sample}.aligned.sorted.marked_dup.bam"
     output:
         variants_dir + "{sample}.vcf"
     log:
