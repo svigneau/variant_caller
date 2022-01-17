@@ -10,3 +10,9 @@ The pipeline can be run with one of the following commands:
 - `snakemake --cores [number of cores]` uses local dependencies
 - `snakemake --cores [number of cores] --use-conda` uses snakemake integrated package management to fetch dependencies from conda repository and create self-contained environments
 - `snakemake --cores [number of cores] --use-conda --use-singularity` uses snakemake integrated package management within a Docker container which will be pulled from DockerHub (docker://svigneau/variant_caller) and contains the required dependencies
+
+**Notes:**
+
+Unit tests generated with `snakemake --generate-unit-tests` were modified to do the following:
+- handle config and log files as described in: https://github.com/snakemake/snakemake/issues/843#issuecomment-832566353
+- remove date line from vcf files

@@ -1,0 +1,23 @@
+# base name of fastq files after removing extension
+# e.g. for fastq files "sample.R1.paired.fq" and "sample.R2.paired.fq",
+# the corresponding base name is "sample"
+samples:
+    test_sample
+
+# fastq file name extensions for read 1 and read 2
+# e.g. for fastq files "sample.R1.paired.fq" and "sample.R2.paired.fq"
+# the corresponding extensions are ".R1.paired.fq" and ".R2.paired.fq" 
+fastq_ext:
+    r1: .R1.paired.fq
+    r2: .R2.paired.fq
+
+# name of reference genome fastq file
+genome: MN908947.3.fasta
+
+# directory structure for pipeline
+ref_dir: ref/
+log_dir: results/logs/
+env_dir: envs/
+fastq_dir: fastq/
+aligned_dir: results/aligned/
+variants_dir: results/variants/

@@ -38,7 +38,7 @@ rule bwa_mem:
     input:
         fastq1 = fastq_dir + "{sample}" + fastq_ext_r1, 
         fastq2 = fastq_dir + "{sample}" + fastq_ext_r2,
-        index = rules.bwa_index.output
+        index  = multiext(ref_dir + genome, "", ".amb", ".ann", ".bwt", ".pac", ".sa")
     output:
         aligned_dir + "{sample}.aligned.sam"
     log:

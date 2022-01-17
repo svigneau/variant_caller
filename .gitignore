@@ -1,2 +1,4 @@
 .git/**
 .snakemake/**
+.pytest_cache/**
+#results/**
