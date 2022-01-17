@@ -19,5 +19,6 @@ ref_dir: ref/
 log_dir: results/logs/
 env_dir: envs/
 fastq_dir: fastq/
+fastqc_dir: results/fastqc/
 aligned_dir: results/aligned/
 variants_dir: results/variants/

@@ -5,18 +5,23 @@ configfile: "config/config.yaml"
 # get variables from config file
 fastq_ext_r1 = config["fastq_ext"]["r1"]
 fastq_ext_r2 = config["fastq_ext"]["r2"]
+fastq_base_ext_r1 = fastq_ext_r1.rsplit(".", 1)[0]
+fastq_base_ext_r2 = fastq_ext_r2.rsplit(".", 1)[0]
 genome = config["genome"]
 ref_dir = config["ref_dir"]
 log_dir = config["log_dir"]
 env_dir = config["env_dir"]
 fastq_dir = config["fastq_dir"]
+fastqc_dir = config["fastqc_dir"]
 aligned_dir = config["aligned_dir"]
 variants_dir = config["variants_dir"]
 
 # final output
 rule all:
     input:
-        expand(variants_dir + "{sample}.vcf", sample = config["samples"])
+        vcf = expand(variants_dir + "{sample}.vcf", sample = config["samples"]),
+        fastqc1 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r1 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
+        fastqc2 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r2 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"])
 
 # index genome
 rule bwa_index:
@@ -32,6 +37,23 @@ rule bwa_index:
         env_dir + "bwa.yaml"
     shell:
         "bwa index -p {params.prefix} {input} > {log} 2>&1"
+
+# run fastqc
+rule fastqc:
+    input:
+        fastq1 = fastq_dir + "{sample}" + fastq_ext_r1,
+        fastq2 = fastq_dir + "{sample}" + fastq_ext_r2
+    output:
+        fastqc1 = multiext(fastqc_dir + "{sample}" + fastq_base_ext_r1 + "_fastqc", ".html", ".zip"),
+        fastqc2 = multiext(fastqc_dir + "{sample}" + fastq_base_ext_r2 + "_fastqc", ".html", ".zip")
+    log:
+        log_dir + "fastqc/{sample}.log"
+    params:
+        out_dir = fastqc_dir
+    conda:
+        env_dir + "fastqc.yaml"
+    shell:
+        "fastqc {input.fastq1} {input.fastq2} -o {params.out_dir} > {log} 2>&1"
 
 # align reads to genome
 rule bwa_mem:

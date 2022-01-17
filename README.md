@@ -16,3 +16,12 @@ The pipeline can be run with one of the following commands:
 Unit tests generated with `snakemake --generate-unit-tests` were modified to do the following:
 - handle config and log files as described in: https://github.com/snakemake/snakemake/issues/843#issuecomment-832566353
 - remove date line from vcf files
+
+**To do:**
+- add fastqc
+- add multiqc
+- filter VCF using QUAL and DP
+- mark duplicates
+- annotate VCF with SNPeff or VEP
+- add unit tests for new rules
+- update Dockerfile and image with new environments
