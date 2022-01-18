@@ -8,6 +8,7 @@ fastq_ext_r2 = config["fastq_ext"]["r2"]
 fastq_base_ext_r1 = fastq_ext_r1.rsplit(".", 1)[0]
 fastq_base_ext_r2 = fastq_ext_r2.rsplit(".", 1)[0]
 genome = config["genome"]
+genome_base = genome.rsplit(".", 1)[0]
 ref_dir = config["ref_dir"]
 log_dir = config["log_dir"]
 env_dir = config["env_dir"]
@@ -20,7 +21,7 @@ metrics_dir = config["metrics_dir"]
 # final output
 rule all:
     input:
-        vcf = expand(variants_dir + "{sample}.recode.vcf", sample = config["samples"]),
+        vcf = expand(variants_dir + "{sample}.recode.snpeff.vcf", sample = config["samples"]),
         fastqc1 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r1 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
         fastqc2 = expand(fastqc_dir + "{sample}" + fastq_base_ext_r2 + "_fastqc{fastqc_ext}", sample = config["samples"], fastqc_ext = [".html", ".zip"]),
         bai = expand(aligned_dir + "{sample}.aligned.sorted.marked_dup.bam.bai", sample = config["samples"])
@@ -152,7 +153,7 @@ rule vcftools_filter:
     output:
         variants_dir + "{sample}.recode.vcf"
     log:
-        log_dir + "vcftools_filter/{sample}.vcf"
+        log_dir + "vcftools_filter/{sample}.log"
     params:
         minq = config["vcftools"]["minq"],
         mindp = config["vcftools"]["mindp"],
@@ -162,5 +163,22 @@ rule vcftools_filter:
     shell:
         "vcftools --vcf {input} --minQ {params.minq} --minDP {params.mindp} --recode --recode-INFO-all --out {params.out} > {log} 2>&1"
 
-#samtools flagstat sample.aligned.sorted.bam > samtools_flagstat.txt 2>samtools_flagstat_stderr.txt
-#vcftools --vcf sample.vcf --minQ 20 --minDP 10 --recode --recode-INFO-all --out sample.filtered.vcf 2>vcftools_stderr.txt
+# annotate variants with snpEff
+rule snpeff_ann:
+    input:
+        variants_dir + "{sample}.recode.vcf"
+    output:
+        variants_dir + "{sample}.recode.snpeff.vcf"
+    log:
+        log_dir + "snpeff_ann/{sample}.log"
+    params:
+        genome_version = genome_base,
+        html_stats = metrics_dir + "snpeff/{sample}_snpEff_summary.html"
+    conda:
+        env_dir + "snpeff.yaml"
+    shell:
+        """
+        mkdir -p $(dirname {params.html_stats})
+        snpEff ann -htmlStats {params.html_stats} {params.genome_version} {input} > {output} 2> {log}
+        """
+ 

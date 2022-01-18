@@ -24,7 +24,7 @@
 [M::mem_pestat] skip orientation FF
 [M::mem_pestat] skip orientation RF
 [M::mem_pestat] skip orientation RR
-[M::mem_process_seqs] Processed 32000 reads in 0.783 CPU sec, 0.784 real sec
+[M::mem_process_seqs] Processed 32000 reads in 0.785 CPU sec, 0.785 real sec
 [main] Version: 0.7.17-r1188
-[main] CMD: bwa mem ref/MN908947.3.fasta fastq/test_sample.R1.paired.fq fastq/test_sample.R2.paired.fq
-[main] Real time: 1.054 sec; CPU: 0.827 sec
+[main] CMD: bwa mem ref/MN908947.3.fasta fastq/test_sample_1.fastq fastq/test_sample_2.fastq
+[main] Real time: 1.045 sec; CPU: 0.829 sec

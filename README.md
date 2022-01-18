@@ -27,3 +27,4 @@ Unit tests generated with `snakemake --generate-unit-tests` were modified to do 
 - update Dockerfile and Docker image with new environments
 - use os.path.join for paths in Snakefile
 - use snakemake wrappers
+- add parallel-fastq-dump to fetch fastq by SRR id
