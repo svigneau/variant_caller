@@ -17,6 +17,8 @@ Unit tests generated with `snakemake --generate-unit-tests` were modified to do 
 - handle config and log files as described in: https://github.com/snakemake/snakemake/issues/843#issuecomment-832566353
 - remove date line from vcf files
 
+The unit tests use SARS-CoV-2 reference genome and sequencing data from a Covid patient. In the resulting vcf files, most polymorphisms are homozygous as expected with a haploid viral genome. However, a small proportion of polymorphisms appear as heterozygous. This may have been caused by primers used for viral genome amplification overlapping with polymorphisms present in the sample, as reported here: https://primer-monitor.neb.com/lineages.
+
 **To do:**
 - add fastqc [DONE]
 - add multiqc
